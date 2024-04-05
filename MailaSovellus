@@ -1,134 +1,89 @@
-package Harjoitustyo;
+package com.github.jaakkosyv.harkkatyo;
+
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 
 /**
- * Luokka, joka kuvaa pelaajaa
+ * JavaFX-sovellus, joka antaa oikean pituisen ja flexisen mailan syötettyjen tietojen perusteella.
  */
-public class Pelaaja {
+public class MailaSovellus extends Application {
 
-    // Muuttujat mitkä vaikuttavat mailan jäykkyyteen, pituuteen ja kätisyyteen.
+    @Override
+    public void start(Stage primaryStage) {
+        // Luodaan komponentit joita käytetään
+        Label lengthLabel = new Label("Pituus (cm):");
+        TextField lengthField = new TextField();
+        Label weightLabel = new Label("Paino (kg):");
+        TextField weightField = new TextField();
+        Label powerLabel = new Label("Voimataso (1-3):");
+        Slider powerSlider = new Slider(1, 3, 2);
+        powerSlider.setShowTickMarks(true);
+        powerSlider.setShowTickLabels(true);
+        Label handednessLabel = new Label("Kätisyys:");
+        ComboBox<String> handednessCombo = new ComboBox<>();
+        handednessCombo.getItems().addAll("Oikea", "Vasen");
+        handednessCombo.setValue("Oikea");
 
-    /** Pelaajan pituus metreinä. Mailan pituus=omapituus-25cm */
-    private double pituus;
+        Button calculateButton = new Button("Laske");
+        Label resultLabel = new Label();
 
-    /** Pelaajan paino kilogrammoina. Mailan jäykkyys=omapaino*1.07 */
-    private double paino;
+        // Luodaan ruudukko ja lisätään komponentit siihen
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
 
-    /** Pelaajan kätisyys, eli leftin vai rightin maila. oikekätisille lefti ja vasenkätisille righti */
-    private String katisyys;
+        grid.add(lengthLabel, 0, 0);
+        grid.add(lengthField, 1, 0);
+        grid.add(weightLabel, 0, 1);
+        grid.add(weightField, 1, 1);
+        grid.add(powerLabel, 0, 2);
+        grid.add(powerSlider, 1, 2);
+        grid.add(handednessLabel, 0, 3);
+        grid.add(handednessCombo, 1, 3);
+        grid.add(calculateButton, 0, 4, 2, 1);
+        grid.add(resultLabel, 0, 5, 2, 1);
 
-    /**
-     * Pelaajan voimataso (1-3)
-     * <p>
-     * Voimataso 1 on heikoin, 2 on neutraali ja 3 vahva. Vaikutukset mailan jäykkyyteen: 1=-5, 2=0, 3=+5
-     */
-    private int voimataso;
+        // Määritellään tapahtumankäsittelijä napille
+        calculateButton.setOnAction(event -> {
+            double givenLength = Double.parseDouble(lengthField.getText());
+            double weight = Double.parseDouble(weightField.getText());
+            double powerLevel = powerSlider.getValue();
+            String handedness = handednessCombo.getValue();
+            handedness = (handedness.equals("Oikea")) ? "left" : "right"; // Muunnetaan kätisyys leftiksi tai rightiksi
 
-    /**
-     * Luo uuden pelaajaolion annetuilla parametreillä.
-     *
-     * @param pituus    Pelaajan pituus metreinä.
-     * @param paino     Pelaajan paino kilogrammoina.
-     * @param katisyys  Pelaajan kätisyys, "left" tai "right".
-     * @param voimataso Pelaajan voimataso, kokonaisluku välillä 1-3.
-     * @throws IllegalArgumentException jos annettu voimataso ei ole välillä 1-3.
-     */
-    public Pelaaja(double pituus, double paino, String katisyys, int voimataso) {
-        this.pituus = pituus;
-        this.paino = paino;
-        this.katisyys = katisyys;
-        // Tarkistetaan, että voimataso on välillä 1-3
-        if (voimataso < 1 || voimataso > 3) {
-            throw new IllegalArgumentException("Voimataso tulee olla välillä 1-3");
-        }
-        this.voimataso = voimataso;
+            // Lasketaan mailan pituus ja jäykkyys
+            double length = givenLength - 25;
+            int stiffnessModifier = 0;
+            if (powerLevel == 1) stiffnessModifier = -5;
+            else if (powerLevel == 3) stiffnessModifier = 5;
+            int stiffness = (int) (weight * 1.07) + stiffnessModifier;
+
+            // Tulosten näyttäminen
+            resultLabel.setText("Mailan pituus: " + length + " cm\n" +
+                    "Mailan jäykkyys: " + stiffness + " flex\n" +
+                    "Mailan kätisyys: " + handedness);
+        });
+
+        // Asetetaan ruudukko näytölle
+        Scene scene = new Scene(grid, 400, 300);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("JääkiekkomailaSovellus");
+        primaryStage.show();
     }
 
     /**
-     * Tulostaa pelaajan tiedot.
-     */
-    public void tulostaTiedot() {
-        System.out.println("Pelaajan pituus: " + pituus + " metriä");
-        System.out.println("Pelaajan paino: " + paino + " kilogrammaa");
-        System.out.println("Pelaajan kätisyys: " + katisyys);
-        System.out.println("Pelaajan voimataso: " + voimataso);
-    }
-
-    // Getterit ja setterit muuttujille
-
-    /**
-     * Palauttaa pelaajan pituuden.
+     * Metodi, joka käynnistää JavaFX-sovelluksen, eli nyt saadaan syötettyä oikeat arvot sisään
      *
-     * @return pelaajan pituus metreinä.
+     * @param args komentoriviparametrit (ei käytössä tässä sovelluksessa)
      */
-    public double getPituus() {
-        return pituus;
-    }
-
-    /**
-     * Asettaa pelaajan pituuden.
-     *
-     * @param pituus pelaajan uusi pituus metreinä.
-     */
-    public void setPituus(double pituus) {
-        this.pituus = pituus;
-    }
-
-    /**
-     * Palauttaa pelaajan painon.
-     *
-     * @return pelaajan paino kilogrammoina.
-     */
-    public double getPaino() {
-        return paino;
-    }
-
-    /**
-     * Asettaa pelaajan painon.
-     *
-     * @param paino pelaajan uusi paino kilogrammoina.
-     */
-    public void setPaino(double paino) {
-        this.paino = paino;
-    }
-
-    /**
-     * Palauttaa pelaajan kätisyyden.
-     *
-     * @return pelaajan kätisyys, "left" tai "right".
-     */
-    public String getKatisyys() {
-        return katisyys;
-    }
-
-    /**
-     * Asettaa pelaajan kätisyyden.
-     *
-     * @param katisyys pelaajan uusi kätisyys, "left" tai "right".
-     */
-    public void setKatisyys(String katisyys) {
-        this.katisyys = katisyys;
-    }
-
-    /**
-     * Palauttaa pelaajan voimatason.
-     *
-     * @return pelaajan voimataso (1-3).
-     */
-    public int getVoimataso() {
-        return voimataso;
-    }
-
-    /**
-     * Asettaa pelaajan voimatason.
-     *
-     * @param voimataso pelaajan uusi voimataso: kokonaisluku (1-3).
-     * @throws IllegalArgumentException jos annettu voimataso ei ole välillä 1-3.
-     */
-    public void setVoimataso(int voimataso) {
-        // Tarkistetaan, että voimataso on välillä 1-3
-        if (voimataso < 1 || voimataso > 3) {
-            throw new IllegalArgumentException("Voimataso tulee olla välillä 1-3");
-        }
-        this.voimataso = voimataso;
+    public static void main(String[] args) {
+        launch(args);
     }
 }
