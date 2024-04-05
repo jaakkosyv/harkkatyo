@@ -1,0 +1,43 @@
+    package harjoitustyo;
+
+    import org.junit.Test;
+    import static org.junit.Assert.*;
+
+    /**
+     * Testipääohjelma pelaajaolion testaamiseen.
+     */
+    public class PelaajaTest {
+
+        /**
+         * Testaa pelaajaolion luomista oikeilla syötteillä.
+         */
+        @Test
+        public void testPelaajanLuominenOikein() {
+            Pelaaja pelaaja = new Pelaaja(1.8, 80, "left", 2);
+            assertEquals(1.8, pelaaja.getPituus(), 0);
+            assertEquals(80, pelaaja.getPaino(), 0);
+            assertEquals("left", pelaaja.getKatisyys());
+            assertEquals(2, pelaaja.getVoimataso());
+        }
+
+        /**
+         * Testaa pelaajaolion luomista virheellisellä voimatasolla.
+         */
+        @Test(expected = IllegalArgumentException.class)
+        public void testPelaajanLuominenVirheellisellaVoimatasolla() {
+            // Voimataso ei saa olla alle 1 tai yli 3
+            new Pelaaja(1.8, 80, "left", 4);
+        }
+
+        /**
+         * Testaa pelaajaolion painon ja voimatasojen muuttamista.
+         */
+        @Test
+        public void testPainonJaVoimatasojenMuuttaminen() {
+            Pelaaja pelaaja = new Pelaaja(1.8, 80, "left", 2);
+            pelaaja.setPaino(75);
+            pelaaja.setVoimataso(3);
+            assertEquals(75, pelaaja.getPaino(), 0);
+            assertEquals(3, pelaaja.getVoimataso());
+        }
+    }
